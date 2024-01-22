@@ -17,7 +17,7 @@
 
 "use strict";
 
-var zlib = require("zlibjs/bin/gunzip.min.js");
+var node_zlib = require("zlib");
 var DictionaryLoader = require("./DictionaryLoader");
 
 /**
@@ -46,10 +46,12 @@ BrowserDictionaryLoader.prototype.loadArrayBuffer = function (url, callback) {
             return;
         }
         var arraybuffer = this.response;
-
-        var gz = new zlib.Zlib.Gunzip(new Uint8Array(arraybuffer));
-        var typed_array = gz.decompress();
-        callback(null, typed_array.buffer);
+        node_zlib.gunzip(new Uint8Array(arraybuffer), function (err2, decompressed) {
+            if(err2) {
+                return callback(err2);
+            }
+            callback(null, new Uint8Array(decompressed).buffer);
+        });
     };
     xhr.onerror = function (err) {
         callback(err, null);
